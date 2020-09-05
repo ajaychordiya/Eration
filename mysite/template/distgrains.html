@@ -1,0 +1,133 @@
+{%load static%}
+<!DOCTYPE html>
+<html>
+<script src="{% static 'vendor/jquery/jquery.min.js'%}"></script>
+<script src="{% static 'js/bootstrap.min.js'%}"></script>
+
+  <link rel="stylesheet" href="{% static 'css/bootstrap.min.css'%}" type="text/css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+ <script src="js/bootstrap.min.js"></script>
+
+
+
+
+<link rel="stylesheet" href="{% static 'css/css2.css'%}" type="text/css">
+<head>
+<style>
+table {
+  font-family: arial, sans-serif;
+  border-collapse: collapse;
+  width: 80%;
+}
+
+td, th {
+  border: 5px solid #dddddd;
+  text-align: center;
+  padding: 20px;
+}
+
+tr:nth-child(even) {
+  background-color: #dddddd;
+}
+
+.button2:hover {
+  box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24),0 17px 50px 0 rgba(0,0,0,0.19);
+}
+
+.button2 {
+  display: block;
+  width: 70%;
+  border: 5px;
+  border-radius:45%;
+  border-color: blue;
+  background-color: #4CAF50;
+  color: white;
+  padding: 14px 28px;
+  font-size: 14px;
+  cursor: pointer;
+  text-align: center;
+}
+
+.button2:hover {
+  background-color: #ddd;
+  color: black;
+}
+</style>
+</head>
+<body>
+
+
+
+
+
+<form action="recognize" method="POST">
+	{% csrf_token %}
+
+<div class="header">
+  <a href="#default" class="logo">Facial Recognization</a>
+  <div class="header-right">
+    <a class="btn" href="Login"><i class="fa fa-home"></i> Home</a>
+    <a class="btn" href="#contact"><i class="fa fa-address-book"></i> Contact</a>
+      <a class="btn" href="#about"><i class="fa fa-info-circle"></i> About</a>
+      <a class="btn" href="Login"><i class="fa fa-sign-out"></i> Logout</a>
+  </div>
+</div>
+
+
+
+<br/>
+<div class="container" align="center">
+
+  <img src="{% static 'img/hicon.png' %}" height="125" width="125">
+
+<h2 align="center">See Towards Camera</h2>
+<br/>
+    {% if messages %}
+        {% for message in messages %}
+         {% if message.tags %}  <script>alert("{{ message }}")</script> {% endif %}
+
+        {% endfor %}
+
+    {% endif %}
+	<div class="row">
+
+		<div class="col-sm-4">
+		   Enter Aadhar No.
+		</div>
+    <div class="col-sm-4">
+    <input type="text" name="uid">
+    <br/>
+  </div>
+
+ </div>
+
+
+  <div class="row">
+    <br/>
+    <div class="col-sm-4">
+    <br/>
+    <br/>
+
+
+
+    </div>
+    <div class="col-sm-4">
+<br/>
+<button class="button button2" type="submit" name="submit" value="scan"><i class="fa fa-camera"></i> Face Scan </button>
+    </div>
+</div>
+
+</form>
+
+
+    <script src="{% static 'js/jquery-3.3.1.min.js'%}"></script>
+    <script src="{% static 'js/bootstrap.min.js'%}"></script>
+    <script src="{% static 'js/jquery.magnific-popup.min.js'%}"></script>
+    <script src="{% static 'js/jquery.nice-select.min.js'%}"></script>
+    <script src="{% static 'js/jquery.slicknav.js'%}"></script>
+    <script src="{% static 'js/jquery-ui.min.js'%}"></script>
+    <script src="{% static 'js/owl.carousel.min.js'%}"></script>
+    <script src="{% static 'js/main.js'%}"></script>
+
+</body>
+</html>

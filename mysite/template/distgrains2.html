@@ -1,0 +1,26 @@
+{%load static%}
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="{% static 'css/css2.css'%}" type="text/css">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<br>
+  <div class="header">
+  <a href="#default" class="logo">Distribution</a>
+  <div class="header-right">
+
+    <a class="btn" href="Login"><i class="fa fa-home"></i> Home</a>
+    <a class="btn" href="#contact"><i class="fa fa-address-book"></i> Contact</a>
+      <a class="btn" href="#about"><i class="fa fa-info-circle"></i> About</a>
+      <a class="btn" href="Login"><i class="fa fa-sign-out"></i> Logout</a>
+  </div>
+</div>
+<h3 align="left">This family is not eligible to receive grains as this family have white colored card</h3>
+  <a><b>Family ID:{{idddd}}</b></a>
+</br>
+  <a><b>   Number of member(s):{{mcount}}</b></a>
+{% csrf_token %}
+</body>
+</html>
