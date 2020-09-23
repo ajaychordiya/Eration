@@ -1,88 +1,59 @@
-{%load static%}
+{% extends "base.html"%}
+{% block content %}
 <!DOCTYPE html>
 <html>
-<script src="{% static 'vendor/jquery/jquery.min.js'%}"></script>
-<script src="{% static 'css/bootstrap.min.css'%}"></script>
 
-
-<link rel="stylesheet" href="{% static 'css/css2.css'%}" type="text/css">
 <head>
-<style>
-table {
-  font-family: arial, sans-serif;
-  border-collapse: collapse;
-  width: 90%;
-}
-
-td, th {
-  border: 5px solid #dddddd;
-  text-align: center;
-  padding: 10px;
-}
-
-tr:nth-child(even) {
-  background-color: #dddddd;
-}
-</style>
+    <title>Bootstrap Example</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  
 </head>
 <body>
 
-
-
-
-  <div class="header">
-  <a href="#default" class="logo">Distribution</a>
-  <div class="header-right">
-
-    <a class="btn" href="Login"><i class="fa fa-home"></i> Home</a>
-    <a class="btn" href="#contact"><i class="fa fa-address-book"></i> Contact</a>
-      <a class="btn" href="#about"><i class="fa fa-info-circle"></i> About</a>
-      <a class="btn" href="Login"><i class="fa fa-sign-out"></i> Logout</a>
-  </div>
-</div>
-
 <div class="container">
 <h1 align="center">Grain Table</h1>
-  <h4 align="right">Date & time: {{now1}}</h4>
-  <p><b>Family ID: {{idddd}}</br>     Card color: {{cc}}   </br>  Number of member(s): {{mcount}} </br> {{dst}} </b></p>
+  <h4 align="right">Date & time: {{d1.dt}}</h4>
+  <p><b>Family ID: {{f1.id}}</br>     Card color: {{f1.card_color}}   </br>  Number of member(s): {{n2}} </br> {{dst}} </b></p>
     <h4 align="center">Following table shows quantity of grains to be distributed as per rules:</h4>
 
 
 
-
-
-<table align="center">
+<br>
+<br>
+<div class="container">
+<table class="table">
+  <thead class="thead-light">
   <tr>
     <th>Name</th>
     <th>Quantity</th>
   </tr>
+</thead>
   <tr>
-  	{% block content %}
+  	
     <td>Wheat</td>
-    <td>{{wheat}} kg. </td>
+    <td>{{d1.wheat}} kg. </td>
   </tr>
-  {%endblock%}
+
   <tr>
 
     <td>Rice</td>
-    <td>{{rice}} kg. </td>
+    <td>{{d1.rice}} kg. </td>
 
   </tr>
   <tr>
     <td>Dal</td>
-    <td>{{dal}} kg. </td>
+    <td>{{d1.dal}} kg. </td>
 
   </tr>
 </table>
-		<!--<div class="col-sm-4">
-			<input type="submit" name="Facedetect">
 
-		</div>-->
-  <form action="gdata" method="POST">
-	{% csrf_token %}
-
-  </form>
 
 </div>
 </body>
 </html>
+{% endblock %}

@@ -3,7 +3,8 @@ from django.http import HttpResponse
 from django.shortcuts import render,redirect
 from django.contrib import messages
 from .models import distgrains
-from .models import family
+from .models import family,distgrains,mem_reg,Registration
+from django.contrib.auth.decorators import login_required
 
 from django.contrib.auth.models import User, auth
 import cv2
@@ -13,10 +14,62 @@ from datetime import date
 from dateutil import  relativedelta
 import os
 
+import PIL
+
 
 # Create your views here.
 def index(request):
     return render(request, 'index.html')
+
+def family_member(request,id):
+    f=family.objects.get(id=id)
+    n=mem_reg.objects.filter(uid=f)
+    context={
+        'n1':n
+    }
+
+    return render(request, 'viewmember.html',context)
+
+
+def updateView(request):
+    if request.method == 'POST':
+        fname = request.POST['uid']
+        print(fname)
+        a1=mem_reg.objects.get(aadhar=fname)
+        context={
+            'a':a1.id
+        }
+
+        return render(request,'updateView.html',context)
+
+    else:
+        return render(request, 'update.html')
+
+
+def deleteView(request):
+    if request.method == 'POST':
+        fname = request.POST['uid']
+        print(fname)
+        a1=mem_reg.objects.get(aadhar=fname)
+        a1.delete()
+
+        return render(request,'facecaptured.html')
+
+    else:
+        return render(request, 'deletev.html')
+def saveUpdate(request,id):
+    if request.method == 'POST':
+        fname = request.POST['first_name']
+        lname = request.POST['last_name']
+        dob = request.POST['dob']
+        mobile = request.POST['mobileno']
+        m=mem_reg.objects.get(id=id)
+        m.first_name=fname
+        m.last_name=lname
+        m.dob=dob
+        m.mobileno=mobile
+        m.save()
+        return render(request,'facecaptured.html')
 
 
 
@@ -31,27 +84,11 @@ def Newmem_reg(request):
         mobile = request.POST['mobileno']
         aadhar = request.POST['aadhar']
         u_id = request.POST['uid']
-
-        import psycopg2
-
-        # Establishing the connection
-        conn = psycopg2.connect(
-            database="Ration", user='postgres', password='ajay', host='127.0.0.1', port='5432'
-        )
-        # Creating a cursor object using the cursor() method
-        cursor = conn.cursor()
-        conn.autocommit = True
-
-        # Doping EMPLOYEE table if already exists.
-
-        cursor.execute(
-            'INSERT INTO ration_newmem_reg(first_name,last_name,dob,gender,mobileno,aadhar,uid_id) VALUES (%s,%s,%s,%s,%s,%s,%s)',
-            (fname, lname, dob, gender, mobile, aadhar, u_id))
-       # cursor.execute("UPDATE ration_family SET member_count=member_count + 1 where id =%s", (u_id,))
-        conn.commit()
+        r1=family.objects.get(id=u_id)
+        r=mem_reg(first_name=fname,last_name=lname,dob=dob,gender=gender,mobileno=mobile,aadhar=aadhar,uid=r1,a=r1.id)
+        r.save()
         print("Inserted successfully........")
 
-        conn.close()
 
         cam = cv2.VideoCapture(0)
         cam.set(3, 640)  # set video width
@@ -133,24 +170,6 @@ def Newmem_reg(request):
 
         # Print the numer of faces trained and end program
         print("\n [INFO] {0} faces trained. Exiting Program".format(len(np.unique(ids))))
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
         return render(request, 'facecaptured.html')
     else:
 
@@ -164,78 +183,40 @@ def Login(request):
     if request.method=='POST':
         uname=request.POST['uname']
         upsw=request.POST['psw']
-
+        print(request.user)
         user=auth.authenticate(username=uname,password=upsw)
         if user is not None:
             auth.login(request,user)
-
-
-            return render(request,'../template/distributer.html')
-
-        #else:
-            #messages.info(request,'invalid credentials')
+            return redirect('dist')
     else:
         return render(request,'index.html')
+
+
+
+@login_required
+def dist(request):
+    f=family.objects.get(id=2)
+    d=distgrains.objects.filter(gid=f).filter(dt__month__gte=9).last()
+    print(d.dt)
+    print(request.user)
+    return render(request,'distributer.html')
 
 def Login2(request):
 
     if request.method=='POST':
         uname=request.POST['uname']
         upsw=request.POST['psw']
+        f1=family.objects.filter(aadhar=uname).filter(mobileno=upsw)
+        f=family.objects.get(aadhar=uname)
 
-        conn = psycopg2.connect(database="Ration", user='postgres', password='ajay', host='127.0.0.1', port='5432')
-        # Creating a cursor object using the cursor() method
-        cursor = conn.cursor()
-        conn.autocommit = True
-        cursor.execute('SELECT aadhar FROM ration_family where id=%s',(uname,))
-        row=cursor.fetchall()
-        for r in row:
-            adhr=r[0]
-        if (upsw==adhr):
-
-            wheat = 0
-            rice = 0
-            dal = 0
-
-            # cursor.execute('INSERT INTO ration_disthgrains'
-            print("hellloo")
-            mcount1 = 0
-            now1 = ""
-            cc = ""
-            cursor.execute("SELECT member_count,card_color FROM ration_family where id=%s", (uname,))
-            row = cursor.fetchall()
-            for r in row:
-                mcount1 = r[0]
-                cc=r[1]
-            print(mcount1)
-            # cursor.execute('SELECT dt FROM ration_distgrains where guid_id=%s', (idddd,))
-            # row = cursor.fetchall()
-            # for r in row:
-            # dt = r[0]
-            # print(dt)
-            idddd=uname
-            mcount=mcount1
-
-            wheat = mcount * 5
-            rice = mcount * 4
-            dal = mcount * 3
-            cursor.execute('SELECT dt FROM ration_distgrains where guid_id=%s',(uname,))
-            row=cursor.fetchall()
-            for r in row:
-                now11=r[0]
-            print(now11)
-            now1=str(now11)
-            conn.commit()
-            conn.close()
-            if cc == "White":
-                return render(request, 'distgrains2.html', {'idddd': idddd, 'mcount': mcount})
-            else:
-                return render(request, 'distgrains1.html',
-                          {'mcount': mcount, 'wheat': wheat, 'rice': rice, 'dal': dal, 'idddd': idddd, 'cc': cc,
-                           'now1': now1})
-
-    #else:
-            #messages.info(request,'invalid credentials')
+        print(f.id)
+        if f1:
+            d=distgrains.objects.filter(idd=f.id)
+            context={
+                'd1' : d,
+                'f1':f.id
+            }
+            return render(request,'user_login.html',context)
 
     else:
         return render(request,'/')
@@ -243,6 +224,7 @@ def Login2(request):
 def newfamily(request):
     return render(request, 'newfamily.html')
 
+@login_required
 def capture(request):
     if request.method=='POST':
         fname=request.POST['first_name']
@@ -252,21 +234,13 @@ def capture(request):
         mobile = request.POST['mobileno']
         aadhar = request.POST['aadhar']
         card_color = request.POST['card_color']
+        f=family.objects.filter(aadhar=aadhar)
+        n=mem_reg.objects.filter(aadhar=aadhar)
+        #print(n.id)
 
-
-
-        conn=psycopg2.connect(database="Ration",user="postgres",password="ajay",host="127.0.0.1",port="5432")
-        cursor=conn.cursor()
-        conn.autocommit=True
-        cursor.execute("SELECT id,aadhar FROM ration_family where aadhar=%s",(aadhar,))
-        row=cursor.fetchall()
-        adr=0
-        for r in row:
-            id2=r[0]
-            adr=r[1]
-        if aadhar==adr:
+        if n or f:
             messages.error(request,'Aadhar number already exists with family id:')
-            return render(request, 'newfamily.html',{'id2': id2})
+            return render(request, 'newfamily.html')
         else:
             cam = cv2.VideoCapture(0)
             cam.set(3, 640)  # set video width
@@ -314,6 +288,7 @@ def capture(request):
             import os
         # Path for face image database
             path = 'capt/dataset'
+            print(path)
 
             recognizer = cv2.face.LBPHFaceRecognizer_create()
             detector = cv2.CascadeClassifier("capt/haarcascade_frontalface_default.xml");
@@ -349,102 +324,19 @@ def capture(request):
         # Print the numer of faces trained and end program
             print("\n [INFO] {0} faces trained. Exiting Program".format(len(np.unique(ids))))
 
-
-        # Establishing the connection
-            conn = psycopg2.connect(
-                database="Ration", user='postgres', password='ajay', host='127.0.0.1', port='5432'
-                )
-        #Creating a cursor object using the cursor() method
-            cursor = conn.cursor()
-            conn.autocommit = True
-
-        # Doping EMPLOYEE table if already exists.
-
-            cursor.execute('INSERT INTO ration_family(first_name,last_name,dob,gender,mobileno,aadhar,card_color) VALUES (%s,%s,%s,%s,%s,%s,%s)',(fname, lname, dob, gender, mobile, aadhar,card_color))
-            conn.commit()
-            print("Inserted successfully........")
-            if (card_color=="Yellow" or card_color=="Orange"):
-                cursor.execute('SELECT id FROM ration_family where aadhar=%s',(aadhar,))
-                row=cursor.fetchall()
-                for r in row:
-                    gid=r[0]
-                cursor.execute('INSERT INTO ration_distgrains(dt,guid_id) VALUES (%s,%s)',("0",gid))
-                conn.commit()
-            conn.close()
+            f=family(first_name=fname,last_name=lname,dob=dob,gender=gender,mobileno=mobile,aadhar=aadhar,card_color=card_color)
+            f.save()
+            r=mem_reg(first_name=fname,last_name=lname,dob=dob,gender=gender,mobileno=mobile,aadhar=aadhar,uid=f,a=f.id)
+            r.save()
             return render(request,'distributer.html')
 
     else:
             return render(request,'erro.html')
 
 
-def distgrains(request):
+def distgrain(request):
 
     return render(request,'distgrains.html')
-
-def addgrains(request):
-
-    if request.method == 'POST':
-        wheat = request.POST['wheat']
-        rice = request.POST['rice']
-        dal = request.POST['dal']
-        gid = request.POST['uid']
-
-        import psycopg2
-
-        # Establishing the connection
-        conn = psycopg2.connect(
-            database="Ration", user='postgres', password='ajay', host='127.0.0.1', port='5432'
-        )
-        # Creating a cursor object using the cursor() method
-        cursor = conn.cursor()
-        conn.autocommit = True
-
-        # Doping EMPLOYEE table if already exists.
-
-        cursor.execute(
-            'INSERT INTO ration_distgrains(wheat,rice,dal,guid_id) VALUES (%s,%s,%s,%s,%s)',
-            (wheat, rice, dal, gid))
-        conn.commit()
-        print("Inserted successfully........")
-
-        conn.close()
-
-        return render(request, 'facecaptured.html')
-    else:
-        return render(request, 'error.html')
-
-
-
-
-
-    return render((request,'facecaptured.html'))
-
-def gdata(request):
-
-    gdata1=request.POST['uid']
-    #if request.method=='POST':
-     #   id3=request.POST['id3']
-    # Establishing the connection
-    #now = datetime.datetime.now()
-    #now2 = now.strftime("%m-%y")
-    #conn = psycopg2.connect(
-     #   database="Ration", user='postgres', password='808748', host='127.0.0.1', port='5432'
-    #)
-    # Creating a cursor object using the cursor() method
-    #cursor = conn.cursor()
-    #conn.autocommit = True
-    #cursor.execute("UPDATE ration_distgrains SET dist=1 where guid_id=%s",(id3,))
-    #conn.commit()
-
-    #cursor.execute(
-     #   'INSERT INTO ration_distgrains(guid_id,dt) VALUES (%s,%s)',
-      #  (idddd, now2))
-    #conn.commit()
-    #print("Inserted successfully........")
-    #print("Updated successfully........")
-
-    # Doping EMPLOYEE table if already exists.
-    #conn.close()
 
 def recognize(request):
     import cv2
@@ -455,9 +347,6 @@ def recognize(request):
     face_id1="capt/trainer/"+str(face_id)+".yml"
 
     print(face_id1)
-
-
-
     recognizer = cv2.face.LBPHFaceRecognizer_create()
     recognizer.read(face_id1)  # load trained model
     cascadePath = "capt/haarcascade_frontalface_default.xml"
@@ -490,136 +379,44 @@ def recognize(request):
             cv2.rectangle(img, (x, y), (x + w, y + h), (0, 255, 0), 2)
 
             id, confidence = recognizer.predict(gray[y:y + h, x:x + w])
-
-            # Check if confidence is less them 100 ==> "0" is perfect match
             if (confidence < 100):
                 confidence = "  {0}".format(round(100 - confidence))
                 k=int(confidence)
                 print(k)
-                if(k>=40):
+                if(k>=45):
                     cam.release()
                     cv2.destroyAllWindows()
-                    conn = psycopg2.connect(database="Ration", user='postgres', password='ajay', host='127.0.0.1',
-                                            port='5432')
-                    # Creating a cursor object using the cursor() method
-                    cursor = conn.cursor()
-                    conn.autocommit = True
+                   
+                    n=mem_reg.objects.get(aadhar=face_id)
+                    f=family.objects.get(id=n.uid.id)
+                    n2=mem_reg.objects.filter(a=n.uid.id).count()
+                    import datetime
+                    now = datetime.datetime.now()
+                    y=now.year-18
+                    print(y)
+                    n3=mem_reg.objects.filter(aadhar=face_id).filter(dob__year__lte=y)
+                    if n3:
+                        print('ajay')
 
+                    n1=n2
+                    print(n1)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-                    cursor.execute("SELECT * FROM ration_newmem_reg where aadhar =%s",(face_id,))
-                    #conn.commit()
-                    row = cursor.fetchall()
-                    print(row)
-                    for r in row:
-                        id = str(r[7])
-
-                    #cursor.execute("SELECT *FROM ration_distgrains where guid_id =%s", (id,))
-                    conn.commit()
-
-                    row = cursor.fetchall()
-                    print(row)
-                    cursor.execute("SELECT uid_id FROM ration_newmem_reg where aadhar =%s",(face_id,))
-                    row=cursor.fetchall()
-                    print("helllo")
-
-                    print(row)
-                    iddd=0
-                    mcount=0
-                    idddd=0
-
-                    cc=""
-                    for r in row:
-                        iddd=r[0]
-                    print(iddd)
-                    if iddd:
-                        cursor.execute("SELECT id FROM ration_family where id=%s",(iddd,))
-                        row=cursor.fetchall()
-                        print(row)
-                        for r in row:
-                            mcount = 3
-                            idddd = r[0]
-                        print(mcount)
+                    if n.uid.card_color == "White" :
+                        return render(request, 'distgrains2.html')
                     else:
-                        cursor.execute("SELECT id FROM ration_family where aadhar=%s",(face_id,))
-                        row=cursor.fetchall()
-                        print(row)
-                        for r in row:
-                            mcount = 3
-                            idddd = r[0]
-                        print(mcount)
-                    #cursor.execute('SELECT dt FROM ration_distgrains where guid_id=%s', (idddd,))
-                    #row = cursor.fetchall()
-                    #for r in row:
-                        #dt = r[0]
-                    #print(dt)
+                        
+                        if n3:
+                            d=distgrains(dal=n1,wheat=3*n1,rice=2*n1,gid=f,idd=f.id)
+                            d.save()
+                            context={
+                                'd1':d,
+                                'f1':f,
+                                'n2':n1
+                            }
+                            return render(request, 'distgrains1.html',context)
+                        else:
 
-                    cursor.execute("SELECT card_color FROM ration_family where id=%s", (idddd,))
-                    row = cursor.fetchall()
-                    for r in row:
-                        cc = r[0]
-                    print(cc)
-                    if cc == "White":
-                        return render(request, 'distgrains2.html', {'idddd': idddd, 'mcount': mcount})
-                    else:
-                        cursor.execute('SELECT EXTRACT(YEAR FROM dt) FROM ration_distgrains')
-                        yy = cursor.fetchall()
-
-
-
-                        #print("year", yy[1])
-
-                        now = datetime.datetime.now()
-                        now1 = now.strftime("%d-%m-%y     %H:%M")
-                        now2 = now.strftime("%m-%d-%y")
-                        now3=now2
-
-
-
-
-                        wheat = 0
-                        rice = 0
-                        dal = 0
-                        wheat = mcount * 5
-                        rice = mcount * 4
-                        dal = mcount * 3
-
-                        cursor.execute('INSERT INTO ration_distgrains(guid_id,wheat,rice,dal,dt,id3) VALUES (%s,%s,%s,%s,%s,%s)',(idddd,wheat,rice,dal,now2,'2'))
-                        conn.commit()
-                        conn.close()
-                        return render(request, 'distgrains1.html',{'mcount': mcount, 'wheat': wheat, 'rice': rice, 'dal': dal, 'idddd': idddd,'cc': cc, 'now1': now1})
-
-                    #cursor.execute("SELECT card_color FROM ration_family where id=%s",(idddd,))
-                    #row=cursor.fetchall()
-                    #for r in row:
-                     #   cc=r[0]
-                    #print(cc)
-
-
-                    #if cc=="White":
-                     #   return render(request,'distgrains2.html',{'idddd':idddd,'mcount':mcount})
-                    #else:
-                        #cursor.execute('INSERT INTO ration_distgrains(dt,guid_id) VALUES(%s,%s)',(now2,idddd))
-                        #conn.commit()
-                        #conn.close()
-                        #return render(request,'distgrains1.html',{'mcount':mcount,'wheat':wheat,'rice':rice,'dal':dal,'idddd':idddd,'cc':cc,'now1':now1})
-
-            #else:
-                    #messages.error(request, 'Face do not match')
-                    #return render(request,'distgrains.html')
+                            return render(request,'chota.html')
             else:
                 id = "unknown"
                 confidence = "  {0}%".format(round(100 - confidence))
@@ -629,11 +426,9 @@ def recognize(request):
 
         cv2.imshow('camera', img)
 
-        k = cv2.waitKey(10) & 0xff  # Press 'ESC' for exiting video
+        k = cv2.waitKey(10) & 0xff  
         if k == 27:
             break
-
-    # Do a bit of cleanup
     print("\n [INFO] Exiting Program and cleanup stuff")
     cam.release()
     cv2.destroyAllWindows()

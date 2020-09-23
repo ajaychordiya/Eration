@@ -17,21 +17,9 @@ bg{
 body{
 background-color:beige;}
 
-.container {
-  padding:40px;
-  align:center;
-
-  height:400px;
-  width:800px;
-  margin: auto;
-  background-color: cyan;
-  border: 1px solid black;
-  opacity: 0.8;
-}
-
 .header {
   overflow: hidden;
-  background-color: gray;
+  background-color: black;
   padding: 20px 10px;
 }
 
@@ -42,8 +30,8 @@ background-color:beige;}
   text-align: center;
   padding: 12px;
   text-decoration: none;
-  font-size: 18px;
-  line-height: 25px;
+  font-size: 15px;
+  line-height: 10px;
   border-radius: 4px;
 }
 
@@ -56,7 +44,6 @@ background-color:beige;}
 /* Change the background color on mouse-over */
 .header a:hover {
   background-color: #ddd;
-  color: cyan;
 }
 
 /* Style the active/current link*/
